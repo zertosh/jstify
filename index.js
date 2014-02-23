@@ -1,6 +1,8 @@
 var through = require('through2');
 var minify = require('html-minifier').minify;
 
+var defaultEngine = 'underscore';
+var templateDefaults = {};
 var minifierDefaults = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
   removeCommentsFromCDATA: false,
@@ -16,7 +18,6 @@ var minifierDefaults = {
   collapseWhitespace: true
 };
 
-var defaultEngine = 'underscore';
 var templateExtension = /\.(jst|tpl|html)$/;
 
 function jstify(file, opts) {
@@ -26,6 +27,11 @@ function jstify(file, opts) {
   opts || (opts = {});
 
   var _ = require(opts.engine || defaultEngine);
+
+  var engine = opts.engine || defaultEngine;
+  var templateOpts = _.defaults({}, opts.templateOpts, templateDefaults);
+  var minifierOpts = _.defaults({}, opts.minifierOpts, minifierDefaults);
+
   var buffer = '';
 
   function push(chunk, enc, cb) {
@@ -34,10 +40,9 @@ function jstify(file, opts) {
   }
 
   function end(cb) {
-    var minified = minify(buffer, _.defaults({}, opts.minifierOpts, minifierDefaults));
-    var compiled = _.template(minified, null, opts.templateOpts).source;
+    var compiled = _.template(minify(buffer, minifierOpts), null, templateOpts).source;
     var wrapped = [
-      'var _ = require(\'', (opts.engine || defaultEngine), '\');\n',
+      'var _ = require(\'', engine, '\');\n',
       'module.exports = ', compiled, ';'
     ].join('');
     this.push(wrapped);
