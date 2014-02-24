@@ -40,18 +40,18 @@ $('#main').html( template({ noun: 'red bull' }) );
 var browserify = require('browserify');
 var fs = require('fs');
 var b = browserify('example/main.js');
-b.transform('jstfy')
+b.transform('jstify')
 b.bundle().pipe(fs.createWriteStream('bundle.js'));
 ```
 
 Setting the `engine` to `lodash`:
 ```js
-b.transform('jstfy', { engine: 'lodash' })
+b.transform('jstify', { engine: 'lodash' })
 ```
 
 Setting a mustache style interpolator, turning off comment removal and turning on redundant attribute removal:
 ```js
-b.transform('jstfy', {
+b.transform('jstify', {
     templateOpts: {
         interpolate: /\{\{(.+?)\}\}/g
     },
