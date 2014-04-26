@@ -18,7 +18,7 @@ var minifierDefaults = {
   collapseWhitespace: true
 };
 
-var templateExtension = /\.(jst|tpl|html)$/;
+var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
 function jstify(file, opts) {
 
@@ -40,7 +40,13 @@ function jstify(file, opts) {
   }
 
   function end(cb) {
-    var compiled = _.template(minify(buffer, minifierOpts), null, templateOpts).source;
+    var raw;
+    if (opts.noMinify) {
+      raw = buffer;
+    } else {
+      raw = minify(buffer, minifierOpts);
+    }
+    var compiled = _.template(raw, null, templateOpts).source;
     var wrapped = [
       'var _ = require(\'', engine, '\');\n',
       'module.exports = ', compiled, ';'
