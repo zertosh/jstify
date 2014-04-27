@@ -29,6 +29,7 @@ function jstify(file, opts) {
   var _ = require(opts.engine || defaultEngine);
 
   var engine = opts.engine || defaultEngine;
+  var noMinify = !!opts.noMinify;
   var templateOpts = _.defaults({}, opts.templateOpts, templateDefaults);
   var minifierOpts = _.defaults({}, opts.minifierOpts, minifierDefaults);
 
@@ -40,7 +41,8 @@ function jstify(file, opts) {
   }
 
   function end(cb) {
-    var compiled = _.template(minify(buffer, minifierOpts), null, templateOpts).source;
+    var raw = noMinify ? buffer : minify(buffer, minifierOpts);
+    var compiled = _.template(raw, null, templateOpts).source;
     var wrapped = [
       'var _ = require(\'', engine, '\');\n',
       'module.exports = ', compiled, ';'
