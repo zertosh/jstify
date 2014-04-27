@@ -8,6 +8,7 @@ var requireFromString = require('./helpers/requireFromString');
 var wait = require('./helpers/wait');
 
 var templatePath = __dirname + '/fixtures/index.tpl';
+var brokenTemplatePath = __dirname + '/fixtures/broken.tpl';
 var ignorePath = __dirname + '/fixtures/ignore.js';
 
 describe('jstify', function() {
@@ -94,6 +95,23 @@ describe('jstify', function() {
           output.should.equal(data);
           done();
         }));
+    });
+
+  });
+
+
+  describe('minification turned off', function() {
+
+    before(function() {
+      sourcePath = brokenTemplatePath;
+      options = {
+        noMinify: true
+      };
+    });
+
+    it('broken template should work', function() {
+      var template = requireFromString(output);
+      template().should.equal('<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n');
     });
 
   });
