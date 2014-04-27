@@ -18,7 +18,7 @@ var minifierDefaults = {
   collapseWhitespace: true
 };
 
-var templateExtension = /\.(jst|tpl|html)$/;
+var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
 function jstify(file, opts) {
 
