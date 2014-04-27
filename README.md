@@ -16,10 +16,11 @@ npm install --save-dev jstify
 `jstify` can take a configuration object with any of the following:
 
 * `engine` _(optional)_: The module name of the library to use for template compilation. It will also be the value used for the `var _ = require([engine]);` in the template output. The default value is `underscore`, but may be set to `lodash`.
+* `noMinify` _(optional)_: Whether to use [HTMLMinifer](https://github.com/kangax/html-minifier) or not. Defaults to `false`. This is useful for when your template looks like broken markup and the minifier is complaining.
 * `templateOpts` _(optional)_: The options to pass to the compilation library. By default this is empty, so check [Underscore's template docs](http://underscorejs.org/#template) or [Lo-Dash's template docs](http://lodash.com/docs#template) for their respective defaults and options.
 * `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments` and `collapseWhitespace` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
 
-The transform is only be applied to `.tpl`, `.jst`, or `.html` files.
+The transform is only be applied to `.ejs`, `.tpl`, `.jst`, or `.html` files.
 
 ### Usage ###
 
