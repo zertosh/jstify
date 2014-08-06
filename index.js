@@ -32,6 +32,12 @@ function jstify(file, opts) {
   var noMinify = !!opts.noMinify;
   var templateOpts = _.defaults({}, opts.templateOpts, templateDefaults);
   var minifierOpts = _.defaults({}, opts.minifierOpts, minifierDefaults);
+  var imports = (function(imports) {
+    if (engine === 'lodash' && (imports === true || typeof imports === 'undefined')) {
+      imports = '_.templateSettings.imports';
+    }
+    return (typeof imports === 'string') ? imports : false;
+  })(opts.imports);
 
   var buffer = '';
 
@@ -43,10 +49,14 @@ function jstify(file, opts) {
   function end(cb) {
     var raw = noMinify ? buffer : minify(buffer, minifierOpts);
     var compiled = _.template(raw, null, templateOpts).source;
-    var wrapped = [
-      'var _ = require(\'', engine, '\');\n',
-      'module.exports = ', compiled, ';'
-    ].join('');
+    var wrapped = (function(str) {
+      if (imports) {
+        str.unshift('with (' + imports + ') {\n');
+        str.push('\n}');
+      }
+      str.unshift('var _ = require(\'' + engine + '\');\n');
+      return str;
+    })(['module.exports = ', compiled, ';']).join('');
     this.push(wrapped);
     cb();
   }
