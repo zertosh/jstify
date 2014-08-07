@@ -4,7 +4,7 @@ require('should');
 
 var fs = require('fs');
 var jstify = require('../');
-var requireFromString = require('./helpers/requireFromString');
+var requireFromString = require('./helpers/requirefromstring');
 var wait = require('./helpers/wait');
 
 var templatePath = __dirname + '/fixtures/index.tpl';
