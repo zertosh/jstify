@@ -20,6 +20,19 @@ var minifierDefaults = {
 
 var templateExtension = /\.(jst|tpl|html|ejs)$/;
 var passthrough = function(src) { return src; };
+var lodashImportsPrefilter = function(src) {
+  return (
+    '(function() {\n' +
+      'with (_.templateSettings.imports) {\n' +
+        'return ' + src + ';' +
+      '}\n' +
+    '})()'
+  );
+};
+var defaultPrefilter = function(engine) {
+  if (engine === 'lodash') return lodashImportsPrefilter;
+  return passthrough;
+};
 
 function jstify(file, opts) {
 
@@ -31,7 +44,7 @@ function jstify(file, opts) {
 
   var engine = opts.engine || defaultEngine;
   var noMinify = !!opts.noMinify;
-  var prefilter = opts.prefilter || passthrough;
+  var prefilter = opts.prefilter || defaultPrefilter(engine);
   var templateOpts = _.defaults({}, opts.templateOpts, templateDefaults);
   var minifierOpts = _.defaults({}, opts.minifierOpts, minifierDefaults);
 
