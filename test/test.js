@@ -60,6 +60,10 @@ describe('jstify', function() {
       output.should.startWith('var _ = require(\'lodash\');');
     });
 
+    it('default prefilter should include imports', function() {
+      output.should.containEql('with (_.templateSettings.imports) {');
+    });
+
   });
 
 
@@ -112,6 +116,29 @@ describe('jstify', function() {
     it('broken template should work', function() {
       var template = requireFromString(output);
       template().should.equal('<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n');
+    });
+
+  });
+
+
+  describe('prefilter function', function() {
+
+    before(function() {
+      sourcePath = templatePath;
+      options = {
+        prefilter: function(src) {
+          return (
+            '(function() {\n' +
+              'return ' + src.replace('red bull', 'dogs').replace('cat gifs', 'only dogs') + ';\n' +
+            '})()'
+          );
+        }
+      };
+    });
+
+    it('prefilter should modify template', function() {
+      var template = requireFromString(output);
+      template().should.equal('<div><p>i like dogs and only dogs</p></div>');
     });
 
   });
