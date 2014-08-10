@@ -10,6 +10,7 @@ var wait = require('./helpers/wait');
 var templatePath = __dirname + '/fixtures/index.tpl';
 var brokenTemplatePath = __dirname + '/fixtures/broken.tpl';
 var ignorePath = __dirname + '/fixtures/ignore.js';
+var importsTemplatePath = __dirname + '/fixtures/imports.tpl';
 
 describe('jstify', function() {
 
@@ -112,6 +113,26 @@ describe('jstify', function() {
     it('broken template should work', function() {
       var template = requireFromString(output);
       template().should.equal('<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n');
+    });
+
+  });
+
+  describe('withImports', function() {
+
+    before(function() {
+      sourcePath = importsTemplatePath;
+      options = {
+        engine: 'lodash',
+        withImports: true
+      };
+    });
+
+    it('properties on _.templateSettings.imports should be available', function() {
+      var _ = require('lodash');
+      _.templateSettings.imports.importedFunction = function() { return 'dogs are cool'; };
+      var template = requireFromString(output);
+      template().should.equal('<div>dogs are cool</div>');
+      delete _.templateSettings.imports.importedFunction;
     });
 
   });
