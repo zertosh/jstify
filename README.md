@@ -1,7 +1,7 @@
 jstify
 ======
 
-`jstify` is a [Browserify](https://github.com/substack/node-browserify) transform for creating modules of pre-compiled [Underscore](https://github.com/jashkenas/underscore) and [Lo-Dash](https://github.com/lodash/lodash) templates that also minifies the template's HTML using [HTMLMinifer](https://github.com/kangax/html-minifier) before compilation.
+`jstify` is a [Browserify](https://github.com/substack/node-browserify) transform for creating modules of pre-compiled [Underscore](https://github.com/jashkenas/underscore) and [Lo-Dash](https://github.com/lodash/lodash) templates that also minifies the template's HTML using [HTMLMinifier](https://github.com/kangax/html-minifier) before compilation.
 
 ### Installation ###
 With [`npm`](http://npmjs.org/) as a local development dependency:
