@@ -1,69 +1,51 @@
+var _ = require('underscore');
 var through = require('through2');
 var minify = require('html-minifier').minify;
 
-var defaultEngine = 'underscore';
-var templateDefaults = {};
-var minifierDefaults = {
+var MINIFIER_OPTS = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
-  removeCommentsFromCDATA: false,
-  removeCDATASectionsFromCDATA: false,
-  collapseBooleanAttributes: false,
-  removeAttributeQuotes: false,
-  removeRedundantAttributes: false,
-  useShortDoctype: false,
-  removeOptionalTags: false,
-  removeEmptyElements: false,
-  // jstify specific
   removeComments: true,
   collapseWhitespace: true
 };
 
 var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
+function compile(str, minifierOpts_, templateOpts_) {
+  var templateOpts = templateOpts_;
+  var minifierOpts = (minifierOpts_ !== false) ? _.defaults({}, minifierOpts_, MINIFIER_OPTS) : false;
+  var minified = minifierOpts ? minify(str, minifierOpts) : str;
+  var compiled = _.template(minified, null, templateOpts);
+  return compiled;
+}
+
+function process(str, minifierOpts_, templateOpts_, engine_) {
+  var engine = engine_ || 'underscore';
+  var source = compile(str, minifierOpts_, templateOpts_).source;
+  var wrapped = (
+    'var _ = require(\'' + engine + '\');\n' +
+    'module.exports = ' + source + ';'
+  );
+  return wrapped;
+}
+
 function jstify(file, opts) {
-
   if (!templateExtension.test(file)) return through();
-
   if (!opts) opts = {};
 
-  var _ = require(opts.engine || defaultEngine);
-
-  var engine = opts.engine || defaultEngine;
-  var noMinify = !!opts.noMinify;
-  var withImports = !!opts.withImports;
-  var templateOpts = _.defaults({}, opts.templateOpts, templateDefaults);
-  var minifierOpts = _.defaults({}, opts.minifierOpts, minifierDefaults);
-
-  var buffer = '';
-
-  function push(chunk, enc, cb) {
-    buffer += chunk;
-    cb();
+  var buffers = [];
+  function push(chunk, enc, next) {
+    buffers.push(chunk);
+    next();
   }
-
-  function end(cb) {
-    var raw = noMinify ? buffer : minify(buffer, minifierOpts);
-    var compiled = _.template(raw, null, templateOpts).source;
-
-    var body = '';
-    body += 'var _ = require(\'' + engine + '\');\n';
-    body += 'module.exports = ';
-
-    if (withImports) {
-      // Write the actual function with a call to "toString" so the module
-      // can take advantage of any minification or additional transforms.
-      // This is roughly what Lo-Dash does to bring in `imports`:
-      // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
-      body += 'Function(_.keys(_.templateSettings.imports), \'return \' + (' + compiled + ').toString()).apply(undefined, _.values(_.templateSettings.imports));';
-    } else {
-      body += compiled + ';';
-    }
-
+  function end(next) {
+    var str = Buffer.concat(buffers).toString();
+    var body = process(str, opts.minifierOpts, opts.templateOpts, opts.engine);
     this.push(body);
-    cb();
+    next();
   }
 
   return through(push, end);
 }
 
 module.exports = jstify;
+module.exports.compile = compile;

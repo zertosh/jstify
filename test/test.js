@@ -1,140 +1,110 @@
-/* global describe, it, before, beforeEach, after, afterEach */
+'use strict';
 
-require('should');
-
+var _ = require('underscore');
+var concat = require('concat-stream');
 var fs = require('fs');
-var jstify = require('../');
-var requireFromString = require('./helpers/requirefromstring');
-var wait = require('./helpers/wait');
+var path = require('path');
+var test = require('tape');
+var vm = require('vm');
 
-var templatePath = __dirname + '/fixtures/index.tpl';
-var brokenTemplatePath = __dirname + '/fixtures/broken.tpl';
-var ignorePath = __dirname + '/fixtures/ignore.js';
-var importsTemplatePath = __dirname + '/fixtures/imports.tpl';
+function startsWith(str, prefix) {
+  return str.indexOf(prefix) === 0;
+}
 
-describe('jstify', function() {
+test('jstify', function(t) {
 
-  var output;
-  var options;
-  var sourcePath;
-  beforeEach(function(done) {
+  var jstify = require('../');
+
+  function jstifier(sourcePath, options, callback) {
     fs.createReadStream(sourcePath)
       .pipe(jstify(sourcePath, options))
-      .pipe(wait(function(err, str) { output = str; done(); }));
+      .pipe(concat({encoding: 'string'}, callback));
+  }
+
+  function loadAsModule(source) {
+    var context = {
+      require: function(name) {return _;},
+      module: {}
+    };
+    vm.runInNewContext(source, context);
+    return context.module.exports;
+  }
+
+  t.test('with default options', function(t) {
+    t.plan(2);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    jstifier(filename, null, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div><p>i like red bull and cat gifs</p></div>',
+        'should work');
+      t.ok(
+        startsWith(output, 'var _ = require(\'underscore\');'),
+        'should have underscore as engine');
+    });
   });
 
-
-  describe('default options', function() {
-
-    before(function() {
-      sourcePath = templatePath;
-      options = {};
+  t.test('with lodash as engine', function(t) {
+    t.plan(2);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    var opts = {engine: 'lodash'};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div><p>i like red bull and cat gifs</p></div>',
+        'should work');
+      t.ok(
+        startsWith(output, 'var _ = require(\'lodash\');'),
+        'should have lodash as engine');
     });
-
-    it('template should work', function() {
-      var template = requireFromString(output);
-      template().should.equal('<div><p>i like red bull and cat gifs</p></div>');
-    });
-
-    it('default engine should be underscore', function() {
-      output.should.startWith('var _ = require(\'underscore\');');
-    });
-
   });
 
-
-  describe('lodash as engine', function() {
-
-    before(function() {
-      sourcePath = templatePath;
-      options = {
-        engine: 'lodash'
-      };
+  t.test('no collapseWhitespace', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    var opts = {minifierOpts: {collapseWhitespace: false}};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div>\n    <p>i like red bull and cat gifs</p>\n        </div>',
+        'should work');
     });
-
-    it('template should work', function() {
-      var template = requireFromString(output);
-      template().should.equal('<div><p>i like red bull and cat gifs</p></div>');
-    });
-
-    it('engine should be lodash', function() {
-      output.should.startWith('var _ = require(\'lodash\');');
-    });
-
   });
 
-
-  describe('no collapseWhitespace', function() {
-
-    before(function() {
-      sourcePath = templatePath;
-      options = {
-        minifierOpts: {
-          collapseWhitespace: false
-        }
-      };
-    });
-
-    it('template should work', function() {
-      var template = requireFromString(output);
-      template().should.equal('<div>\n    <p>i like red bull and cat gifs</p>\n        </div>');
-    });
-
-  });
-
-
-  describe('ignore non-template file', function() {
-
-    before(function() {
-      sourcePath = ignorePath;
-      options = {};
-    });
-
-    it('file should be left intact', function(done) {
-      fs.createReadStream(sourcePath)
-        .pipe(wait(function(err, data) {
-          output.should.equal(data);
-          done();
+  t.test('ignore non-template file', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/ignore.js');
+    jstifier(filename, null, function(output) {
+      fs.createReadStream(filename)
+        .pipe(concat({encoding: 'string'}, function(data) {
+          t.equal(output, data, 'should leave file intact');
         }));
     });
-
   });
 
-
-  describe('minification turned off', function() {
-
-    before(function() {
-      sourcePath = brokenTemplatePath;
-      options = {
-        noMinify: true
-      };
+  t.test('minification turned off', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/broken.tpl');
+    var opts = {minifierOpts: false};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n',
+        'should work');
     });
-
-    it('broken template should work', function() {
-      var template = requireFromString(output);
-      template().should.equal('<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n');
-    });
-
   });
 
-  describe('withImports', function() {
-
-    before(function() {
-      sourcePath = importsTemplatePath;
-      options = {
-        engine: 'lodash',
-        withImports: true
-      };
-    });
-
-    it('properties on _.templateSettings.imports should be available', function() {
-      var _ = require('lodash');
-      _.templateSettings.imports.importedFunction = function() { return 'dogs are cool'; };
-      var template = requireFromString(output);
-      template().should.equal('<div>dogs are cool</div>');
-      delete _.templateSettings.imports.importedFunction;
-    });
-
+  t.test('compile()', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    fs.createReadStream(filename)
+      .pipe(concat({encoding: 'string'}, function(data) {
+        var template = jstify.compile(data);
+        t.equal(template(),
+          '<div><p>i like red bull and cat gifs</p></div>',
+          'should work');
+      }));
   });
 
+  t.end();
 });

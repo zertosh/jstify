@@ -21,19 +21,18 @@
     "url": "git://github.com/zertosh/jstify.git"
   },
   "dependencies": {
-    "html-minifier": "~0.6.6",
-    "lodash": "~2.4.1",
-    "through2": "~0.6.0",
-    "underscore": "~1.6.0"
+    "html-minifier": "^0.6.8",
+    "through2": "^0.6.3",
+    "underscore": "^1.7.0"
   },
   "devDependencies": {
-    "mocha": "~1.21.4",
-    "should": "~4.0.4"
+    "concat-stream": "^1.4.6",
+    "tape": "^3.0.0"
   },
   "engines": {
     "node": ">=0.10"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "tape test/*.js"
   }
 }
