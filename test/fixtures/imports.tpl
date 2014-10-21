@@ -1,0 +1,1 @@
+<div><%= importedFunction() %></div>

@@ -94,6 +94,33 @@ test('jstify', function(t) {
     });
   });
 
+  t.test('withImports', function(t) {
+    t.plan(1);
+    var opts = {withImports: true};
+    var filename = path.resolve('test/fixtures/imports.tpl');
+    jstifier(filename, opts, function(output) {
+      var context = {
+        require: function(name) {
+          return {
+            templateSettings: {
+              imports: {
+                importedFunction: function() { return 'dogs are cool'; }
+              }
+            },
+            keys: _.keys,
+            values: _.values
+          };
+        },
+        module: {}
+      };
+      vm.runInNewContext(output, context);
+      var template = context.module.exports;
+      t.equal(template(),
+        '<div>dogs are cool</div>',
+        'should work');
+    });
+  });
+
   t.test('compile()', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/index.tpl');

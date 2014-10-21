@@ -21,13 +21,24 @@ function compile(str, minifierOpts_, templateOpts_) {
   return compiled;
 }
 
-function process(source, engine_) {
+function process(source, engine_, withImports) {
   var engine = engine_ || 'underscore';
-  var wrapped = (
-    'var _ = require(\'' + engine + '\');\n' +
-    'module.exports = ' + source + ';'
-  );
-  return wrapped;
+  if (withImports) {
+      // This is roughly what Lo-Dash does to bring in `imports`:
+      // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
+    return (
+      'var _ = require(\'' + engine + '\');\n' +
+      // The template is written as an actual function first so that
+      // it can take advantage of any minification. It is then turned
+      // into a string because that's what `Function` takes.
+      'module.exports = Function(_.keys(_.templateSettings.imports), \'return \' + ' + source + '.toString()).apply(undefined, _.values(_.templateSettings.imports));\n'
+    );
+  } else {
+    return (
+      'var _ = require(\'' + engine + '\');\n' +
+      'module.exports = ' + source + ';\n'
+    );
+  }
 }
 
 function jstify(file, opts) {
@@ -51,7 +62,7 @@ function jstify(file, opts) {
         return this.emit('error', e);
     }
 
-    var body = process(compiled, opts.engine);
+    var body = process(compiled, opts.engine, opts.withImports);
     this.push(body);
     next();
   }
