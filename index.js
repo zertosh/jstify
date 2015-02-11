@@ -23,21 +23,27 @@ function compile(str, minifierOpts_, templateOpts_) {
 
 function process(source, engine_, withImports) {
   var engine = engine_ || 'underscore';
+  var engineRequire = 'var _ = require(\'' + engine + '\');\n';
+
+  if (engine === 'lodash-micro') {
+    // Micro template option, where only lodash.escpae is required, this gives
+    // a very small file size footprint compared to include underscore/lodash.
+    // It requires the template to not use any lodash/underscore functions.
+    engineRequire = 'var _ = {escape: require("lodash.escape")};\n';
+  }
+
   if (withImports) {
       // This is roughly what Lo-Dash does to bring in `imports`:
       // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
     return (
-      'var _ = require(\'' + engine + '\');\n' +
+      engineRequire +
       // The template is written as an actual function first so that
       // it can take advantage of any minification. It is then turned
       // into a string because that's what `Function` takes.
       'module.exports = Function(_.keys(_.templateSettings.imports), \'return \' + ' + source + '.toString()).apply(undefined, _.values(_.templateSettings.imports));\n'
     );
   } else {
-    return (
-      'var _ = require(\'' + engine + '\');\n' +
-      'module.exports = ' + source + ';\n'
-    );
+    return engineRequire + 'module.exports = ' + source + ';\n';
   }
 }
 

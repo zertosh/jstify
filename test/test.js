@@ -59,6 +59,21 @@ test('jstify', function(t) {
     });
   });
 
+  t.test('with lodash-micro as engine', function(t) {
+    t.plan(2);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    var opts = {engine: 'lodash-micro'};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div><p>i like red bull and cat gifs</p></div>',
+        'should work');
+      t.ok(
+        startsWith(output, 'var _ = {escape: require("lodash.escape")};'),
+        'should only require lodash.escape');
+    });
+  });
+
   t.test('no collapseWhitespace', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/index.tpl');
