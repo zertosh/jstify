@@ -30,6 +30,10 @@ function process(source, engine_, withImports) {
     // a very small file size footprint compared to include underscore/lodash.
     // It requires the template to not use any lodash/underscore functions.
     engineRequire = 'var _ = {escape: require("lodash.escape")};\n';
+
+    if (withImports) {
+      this.emit('error', 'Cannot use "withImports" together with "lodash-micro"');
+    }
   }
 
   if (withImports) {
