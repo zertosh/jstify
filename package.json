@@ -23,7 +23,8 @@
   "dependencies": {
     "html-minifier": "^0.6.8",
     "through2": "^0.6.3",
-    "underscore": "^1.7.0"
+    "underscore": "^1.7.0",
+    "lodash.escape": "~3.0.0"
   },
   "devDependencies": {
     "concat-stream": "^1.4.6",
