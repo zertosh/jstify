@@ -32,13 +32,13 @@ function process(source, engine_, withImports) {
     engineRequire = 'var _ = {escape: require("lodash.escape")};\n';
 
     if (withImports) {
-      this.emit('error', 'Cannot use "withImports" together with "lodash-micro"');
+      throw new Error('Cannot use "withImports" together with "lodash-micro"');
     }
   }
 
   if (withImports) {
-      // This is roughly what Lo-Dash does to bring in `imports`:
-      // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
+    // This is roughly what Lo-Dash does to bring in `imports`:
+    // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
     return (
       engineRequire +
       // The template is written as an actual function first so that
@@ -67,13 +67,13 @@ function jstify(file, opts) {
     var compiled;
 
     try {
-        compiled = compile(str, opts.minifierOpts, opts.templateOpts).source;
+      compiled = compile(str, opts.minifierOpts, opts.templateOpts).source;
+      var body = process(compiled, opts.engine, opts.withImports);
+      this.push(body);
     } catch(e) {
-        return this.emit('error', e);
+      return this.emit('error', e);
     }
 
-    var body = process(compiled, opts.engine, opts.withImports);
-    this.push(body);
     next();
   }
 
