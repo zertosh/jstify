@@ -20,6 +20,7 @@ npm install --save-dev jstify
 * `templateOpts` _(optional)_: The options to pass to `_.template`. By default this is empty, check [Underscore's template docs](http://underscorejs.org/#template) for more options.
 * `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments` and `collapseWhitespace` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
   * Set to `false` to disable `HTMLMinifier` (This is useful for when your template looks like broken markup and the minifier is complaining).
+  * Alternatively, you can set `noMinify`.
 
 The transform is only be applied to `.ejs`, `.tpl`, `.jst`, or `.html` files.
 

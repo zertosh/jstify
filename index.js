@@ -67,7 +67,7 @@ function jstify(file, opts) {
     var compiled;
 
     try {
-      compiled = compile(str, opts.minifierOpts, opts.templateOpts).source;
+      compiled = compile(str, opts.noMinify ? false : opts.minifierOpts, opts.templateOpts).source;
       var body = process(compiled, opts.engine, opts.withImports);
       this.push(body);
     } catch(e) {

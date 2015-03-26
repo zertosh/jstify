@@ -109,6 +109,18 @@ test('jstify', function(t) {
     });
   });
 
+  t.test('noMinify', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/broken.tpl');
+    var opts = {noMinify: true};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n',
+        'should work');
+    });
+  });
+
   t.test('withImports', function(t) {
     t.plan(1);
     var opts = {withImports: true};
