@@ -21,7 +21,7 @@
     "url": "git://github.com/zertosh/jstify.git"
   },
   "dependencies": {
-    "html-minifier": "^0.6.8",
+    "html-minifier": "^0.7.2",
     "through2": "^0.6.3",
     "underscore": "^1.7.0",
     "lodash.escape": "~3.0.0"
