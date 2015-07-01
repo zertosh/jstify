@@ -7,7 +7,8 @@ var minify  = require('html-minifier').minify;
 var MINIFIER_OPTS = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
   removeComments: true,
-  collapseWhitespace: true
+  collapseWhitespace: true,
+  conservativeCollapse: true
 };
 
 var templateExtension = /\.(jst|tpl|html|ejs)$/;
