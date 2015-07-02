@@ -36,7 +36,7 @@ test('jstify', function(t) {
     jstifier(filename, null, function(output) {
       var template = loadAsModule(output);
       t.equal(template(),
-        '<div><p>i like red bull and cat gifs</p></div>',
+        '<div> <p>i like red bull and cat gifs</p> </div>',
         'should work');
       t.ok(
         startsWith(output, 'var _ = require(\'underscore\');'),
@@ -51,7 +51,7 @@ test('jstify', function(t) {
     jstifier(filename, opts, function(output) {
       var template = loadAsModule(output);
       t.equal(template(),
-        '<div><p>i like red bull and cat gifs</p></div>',
+        '<div> <p>i like red bull and cat gifs</p> </div>',
         'should work');
       t.ok(
         startsWith(output, 'var _ = require(\'lodash\');'),
@@ -66,23 +66,11 @@ test('jstify', function(t) {
     jstifier(filename, opts, function(output) {
       var template = loadAsModule(output);
       t.equal(template(),
-        '<div><p>i like red bull and cat gifs</p></div>',
+        '<div> <p>i like red bull and cat gifs</p> </div>',
         'should work');
       t.ok(
         startsWith(output, 'var _ = {escape: require("lodash.escape")};'),
         'should only require lodash.escape');
-    });
-  });
-
-  t.test('no collapseWhitespace', function(t) {
-    t.plan(1);
-    var filename = path.resolve('test/fixtures/index.tpl');
-    var opts = {minifierOpts: {collapseWhitespace: false}};
-    jstifier(filename, opts, function(output) {
-      var template = loadAsModule(output);
-      t.equal(template(),
-        '<div>\n    <p>i like red bull and cat gifs</p>\n        </div>',
-        'should work');
     });
   });
 
@@ -148,6 +136,30 @@ test('jstify', function(t) {
     });
   });
 
+  t.test('no collapseWhitespace', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    var opts = {minifierOpts: {collapseWhitespace: false}};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div>\n\n  <p>i like red bull and cat gifs</p>\n\n  </div>',
+        'should work');
+    });
+  });
+
+  t.test('no conservativeCollapse', function(t) {
+    t.plan(1);
+    var filename = path.resolve('test/fixtures/index.tpl');
+    var opts = {minifierOpts: {conservativeCollapse: false}};
+    jstifier(filename, opts, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(),
+        '<div><p>i like red bulland cat gifs</p></div>',
+        'should work');
+    });
+  });
+
   t.test('compile()', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/index.tpl');
@@ -155,7 +167,7 @@ test('jstify', function(t) {
       .pipe(concat({encoding: 'string'}, function(data) {
         var template = jstify.compile(data);
         t.equal(template(),
-          '<div><p>i like red bull and cat gifs</p></div>',
+          '<div> <p>i like red bull and cat gifs</p> </div>',
           'should work');
       }));
   });
