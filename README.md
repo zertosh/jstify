@@ -18,7 +18,7 @@ npm install --save-dev jstify
 * `engine` _(optional)_: The value used for `var _ = require([engine]);` in the template output. The default value is `underscore`, but may be set to `lodash` for example. Set it to `lodash-micro` to only include `lodash.escape` as a runtime dependency.
 * `withImports` _(optional)_: Whether to simulate Lo-Dash's [`_.templateSettings.imports`](http://lodash.com/docs#templateSettings_imports) in the compiled template. Defaults to `false`.
 * `templateOpts` _(optional)_: The options to pass to `_.template`. By default this is empty, check [Underscore's template docs](http://underscorejs.org/#template) for more options.
-* `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments` and `collapseWhitespace` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
+* `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments`, `collapseWhitespace` and `conservativeCollapse` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
   * Set to `false` to disable `HTMLMinifier` (This is useful for when your template looks like broken markup and the minifier is complaining).
   * Alternatively, you can set `noMinify`.
 
