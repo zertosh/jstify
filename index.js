@@ -22,7 +22,7 @@ function compile(str, minifierOpts_, templateOpts_) {
   return compiled;
 }
 
-function process(source, engine_, withImports) {
+function wrap(source, engine_, withImports) {
   var engine = engine_ || 'underscore';
   var engineRequire = 'var _ = require(\'' + engine + '\');\n';
 
@@ -52,9 +52,15 @@ function process(source, engine_, withImports) {
   }
 }
 
+function transform(src, opts) {
+  if (!opts) opts = {};
+  var compiled = compile(src, opts.noMinify ? false : opts.minifierOpts, opts.templateOpts).source;
+  var body = wrap(compiled, opts.engine, opts.withImports);
+  return body;
+}
+
 function jstify(file, opts) {
   if (!templateExtension.test(file)) return through();
-  if (!opts) opts = {};
 
   var buffers = [];
 
@@ -64,17 +70,13 @@ function jstify(file, opts) {
   }
 
   function end(next) {
-    var str = Buffer.concat(buffers).toString();
-    var compiled;
-
+    var src = Buffer.concat(buffers).toString();
     try {
-      compiled = compile(str, opts.noMinify ? false : opts.minifierOpts, opts.templateOpts).source;
-      var body = process(compiled, opts.engine, opts.withImports);
-      this.push(body);
+      this.push(transform(src, opts));
     } catch(e) {
-      return this.emit('error', e);
+      this.emit('error', e);
+      return;
     }
-
     next();
   }
 
@@ -83,3 +85,5 @@ function jstify(file, opts) {
 
 module.exports = jstify;
 module.exports.compile = compile;
+module.exports.wrap = wrap;
+module.exports.transform = transform;

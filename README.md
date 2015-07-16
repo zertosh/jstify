@@ -88,6 +88,16 @@ browserify example/main.js -t [ jstify --minifierOpts [ --collapseWhitespace 0 ]
 
 _Command-line caveat: Setting options in `templateOpts` that require a `RegExp` does not work._
 
+#### Transforming with the require hook ####
+
+For node usage:
+
+```js
+require('jstify/register')(/*opts*/);
+```
+
+`opts` are the same as with browserify usage.
+
 ### Transformed Samples ###
 
 Template source:
