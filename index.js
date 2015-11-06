@@ -1,29 +1,34 @@
 'use strict';
 
-var _       = require('underscore');
-var through = require('through2');
-var minify  = require('html-minifier').minify;
+var _ = require('underscore');
+var stream = require('stream');
+var util = require('util');
+var minify = require('html-minifier').minify;
 
-var MINIFIER_OPTS = {
+var MINIFIER_DEFAULTS = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
   removeComments: true,
   collapseWhitespace: true,
   conservativeCollapse: true
 };
 
+var DEFAULTS = {
+  engine: 'underscore',
+  withImports: false,
+  templateOpts: {},
+  minifierOpts: {},
+  noMinify: false
+};
+
 var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
-function compile(str, minifierOpts_, templateOpts_) {
-  var templateOpts = templateOpts_;
-  var minifierOpts = (minifierOpts_ !== false) ? _.defaults({}, minifierOpts_, MINIFIER_OPTS) : false;
-
-  var minified = minifierOpts ? minify(str, minifierOpts) : str;
+function compile(str, minifierOpts, templateOpts) {
+  var minified = minifierOpts === false ? str : minify(str, minifierOpts);
   var compiled = _.template(minified, null, templateOpts);
   return compiled;
 }
 
-function wrap(source, engine_, withImports) {
-  var engine = engine_ || 'underscore';
+function wrap(source, engine, withImports) {
   var engineRequire = 'var _ = require(\'' + engine + '\');\n';
 
   if (engine === 'lodash-micro') {
@@ -53,34 +58,45 @@ function wrap(source, engine_, withImports) {
 }
 
 function transform(src, opts) {
-  if (!opts) opts = {};
   var compiled = compile(src, opts.noMinify ? false : opts.minifierOpts, opts.templateOpts).source;
   var body = wrap(compiled, opts.engine, opts.withImports);
   return body;
 }
 
+function Jstify(opts) {
+  stream.Transform.call(this);
+
+  opts = opts || {};
+  _.defaults(opts, DEFAULTS);
+
+  if (opts.minifierOpts !== false) {
+    _.defaults(opts.minifierOpts, MINIFIER_DEFAULTS);
+  }
+
+  this._data = '';
+  this._opts = opts;
+}
+
+util.inherits(Jstify, stream.Transform);
+
+Jstify.prototype._transform = function (buf, enc, next) {
+  this._data += buf;
+  next();
+};
+
+Jstify.prototype._flush = function (next) {
+  try {
+    this.push(transform(this._data, this._opts));
+  } catch(e) {
+    this.emit('error', e);
+    return;
+  }
+  next();
+};
+
 function jstify(file, opts) {
-  if (!templateExtension.test(file)) return through();
-
-  var buffers = [];
-
-  function push(chunk, enc, next) {
-    buffers.push(chunk);
-    next();
-  }
-
-  function end(next) {
-    var src = Buffer.concat(buffers).toString();
-    try {
-      this.push(transform(src, opts));
-    } catch(e) {
-      this.emit('error', e);
-      return;
-    }
-    next();
-  }
-
-  return through(push, end);
+  if (!templateExtension.test(file)){ return new stream.PassThrough(); }
+  return new Jstify(opts);
 }
 
 module.exports = jstify;
