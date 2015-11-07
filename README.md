@@ -1,6 +1,8 @@
 jstify
 ======
 
+[![Build Status](https://travis-ci.org/zertosh/jstify.svg?branch=master)](https://travis-ci.org/zertosh/jstify)
+
 `jstify` is a [Browserify](https://github.com/substack/node-browserify) transform for creating modules of pre-compiled [Underscore](https://github.com/jashkenas/underscore) templates. It allows setting the name of the `_` module in the template output for use with `lodash`. Also minifies the template's HTML using [HTMLMinifier](https://github.com/kangax/html-minifier) before compilation.
 
 ### Installation ###
