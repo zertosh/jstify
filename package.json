@@ -12,13 +12,11 @@
     "underscore",
     "lodash"
   ],
-  "homepage": "https://github.com/zertosh/jstify",
-  "author": "Andres Suarez <zertosh@gmail.com>",
-  "bugs": "https://github.com/zertosh/jstify/issues",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/zertosh/jstify.git"
+  "author": "Andres Suarez <zertosh@gmail.com>",
+  "repository": "zertosh/jstify.git",
+  "scripts": {
+    "test": "tape test/*.js"
   },
   "dependencies": {
     "html-minifier": "^1.0.0",
@@ -28,11 +26,5 @@
   "devDependencies": {
     "concat-stream": "^1.4.6",
     "tape": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=0.10"
-  },
-  "scripts": {
-    "test": "tape test/*.js"
   }
 }
