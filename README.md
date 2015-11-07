@@ -21,8 +21,7 @@ npm install --save-dev jstify
 * `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments`, `collapseWhitespace` and `conservativeCollapse` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
   * Set to `false` to disable `HTMLMinifier` (This is useful for when your template looks like broken markup and the minifier is complaining).
   * Alternatively, you can set `noMinify`.
-
-The transform is only be applied to `.ejs`, `.tpl`, `.jst`, or `.html` files.
+* `extensions` _(optional)_: The file extensions the transform should apply to. Format is a string of extensions separated by `|`. Defaults to `"ejs|tpl|jst|html"` files.
 
 #### Usage of `engine=lodash-micro` ####
 
@@ -86,6 +85,11 @@ Turning off comment removal:
 browserify example/main.js -t [ jstify --minifierOpts [ --collapseWhitespace 0 ] ] > bundle.js
 ```
 
+Setting custom extensions:
+```bash
+browserify example/main.js -t [ jstify --extensions "html|svg" ] > bundle.js
+```
+
 _Command-line caveat: Setting options in `templateOpts` that require a `RegExp` does not work._
 
 #### Transforming with the require hook ####
@@ -97,6 +101,18 @@ require('jstify/register')(/*opts*/);
 ```
 
 `opts` are the same as with browserify usage.
+
+#### Transforming with package.json ####
+
+```js
+...
+"browserify": {
+  "transform": [
+    ["jstify", {"extensions":"svg|html"}]
+  ]
+},
+...
+```
 
 ### Transformed Samples ###
 

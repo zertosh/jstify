@@ -60,6 +60,10 @@ function transform(src, opts) {
 }
 
 function jstify(file, opts) {
+  if (opts.extensions) {
+    templateExtension = new RegExp('\.(' + opts.extensions + ')$');
+  }
+
   if (!templateExtension.test(file)) return through();
 
   var buffers = [];
