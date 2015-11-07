@@ -165,7 +165,8 @@ test('jstify', function(t) {
     var filename = path.resolve('test/fixtures/index.tpl');
     fs.createReadStream(filename)
       .pipe(concat({encoding: 'string'}, function(data) {
-        var template = jstify.compile(data);
+        var minOpts = {removeComments: true, collapseWhitespace: true, conservativeCollapse: true };
+        var template = jstify.compile(data, minOpts);
         t.equal(template(),
           '<div> <p>i like red bull and cat gifs</p> </div>',
           'should work');
