@@ -16,7 +16,7 @@
   "author": "Andres Suarez <zertosh@gmail.com>",
   "repository": "zertosh/jstify.git",
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "tap test/*.js"
   },
   "dependencies": {
     "html-minifier": "^1.0.0",
@@ -25,6 +25,6 @@
   },
   "devDependencies": {
     "concat-stream": "^1.4.6",
-    "tape": "^3.0.0"
+    "tap": "^2.0.0"
   }
 }

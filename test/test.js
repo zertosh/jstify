@@ -4,7 +4,7 @@ var _ = require('underscore');
 var concat = require('concat-stream');
 var fs = require('fs');
 var path = require('path');
-var test = require('tape');
+var test = require('tap').test;
 var vm = require('vm');
 
 function startsWith(str, prefix) {
