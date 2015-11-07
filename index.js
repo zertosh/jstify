@@ -66,11 +66,10 @@ function transform(src, opts) {
 function Jstify(opts) {
   stream.Transform.call(this);
 
-  opts = opts || {};
-  _.defaults(opts, DEFAULTS);
+  opts = _.defaults({}, opts, DEFAULTS);
 
   if (opts.minifierOpts !== false) {
-    _.defaults(opts.minifierOpts, MINIFIER_DEFAULTS);
+    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
   }
 
   this._data = '';
@@ -87,15 +86,17 @@ Jstify.prototype._transform = function (buf, enc, next) {
 Jstify.prototype._flush = function (next) {
   try {
     this.push(transform(this._data, this._opts));
-  } catch(e) {
-    this.emit('error', e);
+  } catch(err) {
+    this.emit('error', err);
     return;
   }
   next();
 };
 
 function jstify(file, opts) {
-  if (!templateExtension.test(file)){ return new stream.PassThrough(); }
+  if (!templateExtension.test(file)) {
+    return new stream.PassThrough();
+  }
   return new Jstify(opts);
 }
 
