@@ -2,20 +2,9 @@
 
 var _ = require('underscore');
 var stream = require('stream');
+var path = require('path');
 var util = require('util');
 var minify = require('html-minifier').minify;
-
-function extensionToRegExp (extensions) {
-  if (extensions instanceof RegExp) {
-    return extensions;
-  }
-
-  if (typeof extensions === 'string') {
-    extensions = extensions.replace(/ /g, '').split(',');
-  }
-
-  return new RegExp('\.(' + extensions.join('|') + ')$');
-}
 
 var MINIFIER_DEFAULTS = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
@@ -26,7 +15,7 @@ var MINIFIER_DEFAULTS = {
 
 var DEFAULTS = {
   engine: 'underscore',
-  extensions: extensionToRegExp(['jst', 'tpl', 'html', 'ejs']),
+  extensions: ['.jst', '.tpl', '.html', '.ejs'],
   minifierOpts: {},
   noMinify: false,
   templateOpts: {},
@@ -97,12 +86,24 @@ Jstify.prototype._flush = function (next) {
   next();
 };
 
+function parseExtensions (extensions) {
+  if (typeof extensions === 'string') {
+    return extensions.replace(' ', '').split(',');
+  }
+  return extensions
+}
+
+function validExtension (file, extensions) {
+  var ext = path.extname(file);
+  return _.contains(extensions, ext);
+}
+
 function jstify(file, opts) {
   opts = _.defaults({}, opts, DEFAULTS);
 
-  opts.extensions = extensionToRegExp(opts.extensions);
+  opts.extensions = parseExtensions(opts.extensions);
 
-  if (!opts.extensions.test(file)) {
+  if (!validExtension(file, opts.extensions)) {
     return new stream.PassThrough();
   }
 

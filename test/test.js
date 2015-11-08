@@ -180,17 +180,17 @@ test('jstify', function(t) {
       t.equal(output, '<%= "do i compile?" %>\n', 'should not compile');
     });
 
-    jstifier(filename, {extensions: ['ext']}, function(output) {
+    jstifier(filename, {extensions: ['.ext']}, function(output) {
       var template = loadAsModule(output);
       t.equal(template(), 'do i compile?', 'should compile');
     });
 
-    jstifier(filename, {extensions: 'ext'}, function(output) {
+    jstifier(filename, {extensions: '.ext'}, function(output) {
       var template = loadAsModule(output);
       t.equal(template(), 'do i compile?', 'should compile');
     });
 
-    jstifier(filename, {extensions: 'ext, tpl'}, function(output) {
+    jstifier(filename, {extensions: '.ext, .tpl'}, function(output) {
       var template = loadAsModule(output);
       t.equal(template(), 'do i compile?', 'should compile');
     });
