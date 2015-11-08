@@ -5,6 +5,18 @@ var stream = require('stream');
 var util = require('util');
 var minify = require('html-minifier').minify;
 
+function extensionToRegExp (extensions) {
+  if (extensions instanceof RegExp) {
+    return extensions;
+  }
+
+  if (typeof extensions === 'string') {
+    extensions = extensions.replace(/ /g, '').split(',');
+  }
+
+  return new RegExp('\.(' + extensions.join('|') + ')$');
+}
+
 var MINIFIER_DEFAULTS = {
   // http://perfectionkills.com/experimenting-with-html-minifier/#options
   removeComments: true,
@@ -14,13 +26,12 @@ var MINIFIER_DEFAULTS = {
 
 var DEFAULTS = {
   engine: 'underscore',
-  withImports: false,
-  templateOpts: {},
+  extensions: extensionToRegExp(['jst', 'tpl', 'html', 'ejs']),
   minifierOpts: {},
-  noMinify: false
+  noMinify: false,
+  templateOpts: {},
+  withImports: false
 };
-
-var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
 function compile(str, minifierOpts, templateOpts) {
   var minified = minifierOpts === false ? str : minify(str, minifierOpts);
@@ -65,13 +76,6 @@ function transform(src, opts) {
 
 function Jstify(opts) {
   stream.Transform.call(this);
-
-  opts = _.defaults({}, opts, DEFAULTS);
-
-  if (opts.minifierOpts !== false) {
-    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
-  }
-
   this._data = '';
   this._opts = opts;
 }
@@ -94,9 +98,18 @@ Jstify.prototype._flush = function (next) {
 };
 
 function jstify(file, opts) {
-  if (!templateExtension.test(file)) {
+  opts = _.defaults({}, opts, DEFAULTS);
+
+  opts.extensions = extensionToRegExp(opts.extensions);
+
+  if (!opts.extensions.test(file)) {
     return new stream.PassThrough();
   }
+
+  if (opts.minifierOpts !== false) {
+    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
+  }
+
   return new Jstify(opts);
 }
 

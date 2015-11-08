@@ -23,8 +23,8 @@ npm install --save-dev jstify
 * `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments`, `collapseWhitespace` and `conservativeCollapse` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
   * Set to `false` to disable `HTMLMinifier` (This is useful for when your template looks like broken markup and the minifier is complaining).
   * Alternatively, you can set `noMinify`.
+* `extensions` _(optional)_: Array of file extensions the transform will apply to. Defaults to `['ejs', 'tpl', 'jst', 'html']`.
 
-The transform is only be applied to `.ejs`, `.tpl`, `.jst`, or `.html` files.
 
 #### Usage of `engine=lodash-micro` ####
 
@@ -54,9 +54,9 @@ b.transform('jstify')
 b.bundle().pipe(fs.createWriteStream('bundle.js'));
 ```
 
-Setting the `engine` to `lodash`:
+Setting the `engine` to `lodash` and only compile `ext` files:
 ```js
-b.transform('jstify', { engine: 'lodash' })
+b.transform('jstify', { engine: 'lodash', extensions: ['ext'] })
 ```
 
 Setting a mustache style interpolator, turning off comment removal and turning on redundant attribute removal:
@@ -86,6 +86,11 @@ browserify example/main.js -t [ jstify --engine lodash ] > bundle.js
 Turning off comment removal:
 ```bash
 browserify example/main.js -t [ jstify --minifierOpts [ --collapseWhitespace 0 ] ] > bundle.js
+```
+
+Setting custom extensions:
+```bash
+browserify example/main.js -t [ jstify --extensions "html, svg" > bundle.js
 ```
 
 _Command-line caveat: Setting options in `templateOpts` that require a `RegExp` does not work._
