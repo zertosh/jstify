@@ -2,7 +2,6 @@
 
 var _ = require('underscore');
 var stream = require('stream');
-var path = require('path');
 var util = require('util');
 var minify = require('html-minifier').minify;
 
@@ -93,9 +92,10 @@ function parseExtensions (extensions) {
   return extensions
 }
 
-function validExtension (file, extensions) {
-  var ext = path.extname(file);
-  return _.contains(extensions, ext);
+function canCompile (filename, extensions) {
+  return extensions.some(function(ext) {
+    return filename.indexOf(ext, filename.length - ext.length) !== -1;
+  });
 }
 
 function jstify(file, opts) {
@@ -103,7 +103,7 @@ function jstify(file, opts) {
 
   opts.extensions = parseExtensions(opts.extensions);
 
-  if (!validExtension(file, opts.extensions)) {
+  if (!canCompile(file, opts.extensions)) {
     return new stream.PassThrough();
   }
 
