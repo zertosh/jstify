@@ -39,7 +39,7 @@ test('jstify', function(t) {
         '<div> <p>i like red bull and cat gifs</p> </div>',
         'should work');
       t.ok(
-        startsWith(output, 'var _ = require(\'underscore\');'),
+        startsWith(output, 'var _ = require("underscore");'),
         'should have underscore as engine');
     });
   });
@@ -54,7 +54,7 @@ test('jstify', function(t) {
         '<div> <p>i like red bull and cat gifs</p> </div>',
         'should work');
       t.ok(
-        startsWith(output, 'var _ = require(\'lodash\');'),
+        startsWith(output, 'var _ = require("lodash");'),
         'should have lodash as engine');
     });
   });
@@ -97,18 +97,6 @@ test('jstify', function(t) {
     });
   });
 
-  t.test('noMinify', function(t) {
-    t.plan(1);
-    var filename = path.resolve('test/fixtures/broken.tpl');
-    var opts = {noMinify: true};
-    jstifier(filename, opts, function(output) {
-      var template = loadAsModule(output);
-      t.equal(template(),
-        '<div>\n    <pi like red bull and cat gifs</p>\n        </div>\n',
-        'should work');
-    });
-  });
-
   t.test('withImports', function(t) {
     t.plan(1);
     var opts = {withImports: true};
@@ -139,7 +127,12 @@ test('jstify', function(t) {
   t.test('no collapseWhitespace', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/index.tpl');
-    var opts = {minifierOpts: {collapseWhitespace: false}};
+    var opts = {
+      minifierOpts: {
+        removeComments: true,
+        conservativeCollapse: true
+      }
+    };
     jstifier(filename, opts, function(output) {
       var template = loadAsModule(output);
       t.equal(template(),
@@ -151,7 +144,13 @@ test('jstify', function(t) {
   t.test('no conservativeCollapse', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/index.tpl');
-    var opts = {minifierOpts: {conservativeCollapse: false}};
+    var opts = {
+      minifierOpts: {
+        removeComments: true,
+        collapseWhitespace: true,
+      }
+    };
+
     jstifier(filename, opts, function(output) {
       var template = loadAsModule(output);
       t.equal(template(),
@@ -165,8 +164,14 @@ test('jstify', function(t) {
     var filename = path.resolve('test/fixtures/index.tpl');
     fs.createReadStream(filename)
       .pipe(concat({encoding: 'string'}, function(data) {
-        var minOpts = {removeComments: true, collapseWhitespace: true, conservativeCollapse: true };
-        var template = jstify.compile(data, minOpts);
+        var opts = {
+          minifierOpts: {
+            removeComments: true,
+            collapseWhitespace: true,
+            conservativeCollapse: true
+          }
+        };
+        var template = loadAsModule(jstify.compile(data, opts));
         t.equal(template(),
           '<div> <p>i like red bull and cat gifs</p> </div>',
           'should work');

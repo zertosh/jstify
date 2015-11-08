@@ -12,71 +12,19 @@ var MINIFIER_DEFAULTS = {
   conservativeCollapse: true
 };
 
-var DEFAULTS = {
-  engine: 'underscore',
-  withImports: false,
-  templateOpts: {},
-  minifierOpts: {},
-  noMinify: false
-};
+module.exports = Jstify;
+util.inherits(Jstify, stream.Transform);
 
-var templateExtension = /\.(jst|tpl|html|ejs)$/;
-
-function compile(str, minifierOpts, templateOpts) {
-  var minified = minifierOpts === false ? str : minify(str, minifierOpts);
-  var compiled = _.template(minified, null, templateOpts);
-  return compiled;
-}
-
-function wrap(source, engine, withImports) {
-  var engineRequire = 'var _ = require(\'' + engine + '\');\n';
-
-  if (engine === 'lodash-micro') {
-    // Micro template option, where only lodash.escpae is required, this gives
-    // a very small file size footprint compared to include underscore/lodash.
-    // It requires the template to not use any lodash/underscore functions.
-    engineRequire = 'var _ = {escape: require("lodash.escape")};\n';
-
-    if (withImports) {
-      throw new Error('Cannot use "withImports" together with "lodash-micro"');
-    }
+function Jstify(filename, opts) {
+  if (!(this instanceof Jstify)) {
+    return Jstify.configure(opts)(filename);
   }
 
-  if (withImports) {
-    // This is roughly what Lo-Dash does to bring in `imports`:
-    // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
-    return (
-      engineRequire +
-      // The template is written as an actual function first so that
-      // it can take advantage of any minification. It is then turned
-      // into a string because that's what `Function` takes.
-      'module.exports = Function(_.keys(_.templateSettings.imports), \'return \' + ' + source + '.toString()).apply(undefined, _.values(_.templateSettings.imports));\n'
-    );
-  } else {
-    return engineRequire + 'module.exports = ' + source + ';\n';
-  }
-}
-
-function transform(src, opts) {
-  var compiled = compile(src, opts.noMinify ? false : opts.minifierOpts, opts.templateOpts).source;
-  var body = wrap(compiled, opts.engine, opts.withImports);
-  return body;
-}
-
-function Jstify(opts) {
   stream.Transform.call(this);
-
-  opts = _.defaults({}, opts, DEFAULTS);
-
-  if (opts.minifierOpts !== false) {
-    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
-  }
 
   this._data = '';
   this._opts = opts;
 }
-
-util.inherits(Jstify, stream.Transform);
 
 Jstify.prototype._transform = function (buf, enc, next) {
   this._data += buf;
@@ -85,7 +33,8 @@ Jstify.prototype._transform = function (buf, enc, next) {
 
 Jstify.prototype._flush = function (next) {
   try {
-    this.push(transform(this._data, this._opts));
+    var code = Jstify.compile(this._data, this._opts);
+    this.push(code);
   } catch(err) {
     this.emit('error', err);
     return;
@@ -93,14 +42,67 @@ Jstify.prototype._flush = function (next) {
   next();
 };
 
-function jstify(file, opts) {
-  if (!templateExtension.test(file)) {
-    return new stream.PassThrough();
-  }
-  return new Jstify(opts);
-}
+Jstify.EXTENSIONS = ['.jst', '.tpl', '.html', '.ejs'];
 
-module.exports = jstify;
-module.exports.compile = compile;
-module.exports.wrap = wrap;
-module.exports.transform = transform;
+Jstify.configure = function(opts) {
+  opts = _.assign({}, opts);
+
+  var extensions = opts.extensions ?
+    (opts.extensions._ || opts.extensions) :
+    Jstify.EXTENSIONS;
+
+  return function(filename) {
+    if (!Jstify.canCompile(filename, extensions)) {
+      return new stream.PassThrough();
+    }
+    return new Jstify(filename, opts);
+  }
+};
+
+Jstify.canCompile = function(filename, extensions) {
+  return extensions.some(function(ext) {
+    return filename.indexOf(ext, filename.length - ext.length) !== -1;
+  });
+};
+
+Jstify.compile = function(source, opts) {
+  if (!opts) opts = {};
+
+  if (opts.minifierOpts !== false) {
+    var minifierOpts = opts.minifierOpts || MINIFIER_DEFAULTS;
+    source = minify(source, minifierOpts);
+  }
+  source = _.template(source, null, opts.templateOpts).source;
+
+  var engine = opts.engine || 'underscore';
+  var output = '';
+
+  if (opts.engine === 'lodash-micro') {
+    if (opts.withImports) {
+      throw new Error('Cannot use "withImports" together with "lodash-micro"');
+    }
+    // Micro template option, where only lodash.escpae is required, this gives
+    // a very small file size footprint compared to include underscore/lodash.
+    // It requires the template to not use any lodash/underscore functions.
+    output += 'var _ = {escape: require("lodash.escape")};\n';
+  } else {
+    output += 'var _ = require("' + engine + '");\n'
+  }
+
+  if (opts.withImports) {
+    // This is roughly what Lo-Dash does to bring in `imports`:
+    // https://github.com/lodash/lodash/blob/2.4.1/lodash.js#L6672
+    //
+    // The template is written as an actual function first so that
+    // it can take advantage of any minification. It is then turned
+    // into a string because that's what `Function` takes.
+    output += 'module.exports = Function(' +
+      '_.keys(_.templateSettings.imports), '+
+      '"return " + ' + source + '.toString()).apply(undefined, _.values(_.templateSettings.imports)' +
+    ');\n';
+  } else {
+    output += 'module.exports = ' + source + ';\n';
+  }
+
+  return output;
+};
