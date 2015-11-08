@@ -1,21 +1,19 @@
 'use strict';
 
 var fs = require('fs');
+var Jstify = require('./');
 
-var jstify = require('./');
 var registered;
-
-var DEFAULT_EXTENSIONS = ['.jst', '.tpl', '.html', '.ejs'];
 
 module.exports = function(opts) {
   if (registered) return;
   if (!opts) opts = {};
 
-  var extensions = opts.extensions || DEFAULT_EXTENSIONS;
+  var extensions = opts.extensions || Jstify.EXTENSIONS;
 
   function compile(module, file) {
     var src = stripBOM(fs.readFileSync(file, 'utf8'));
-    var transformed = jstify.transform(src, opts);
+    var transformed = Jstify.compile(src, opts);
     module._compile(transformed, file);
   }
 
