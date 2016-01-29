@@ -23,6 +23,7 @@ npm install --save-dev jstify
 * `minifierOpts` _(optional)_: The options to pass to [HTMLMinifer](https://github.com/kangax/html-minifier). By default, `removeComments`, `collapseWhitespace` and `conservativeCollapse` are set to `true`, everything else is `false`. See the [HTMLMinifier options docs](http://perfectionkills.com/experimenting-with-html-minifier/#options) for more info.
   * Set to `false` to disable `HTMLMinifier` (This is useful for when your template looks like broken markup and the minifier is complaining).
   * Alternatively, you can set `noMinify`.
+ * `extensions` _(optional)_: The file extensions the transform should apply to. Format is a string of extensions separated by `|`. Defaults to `"ejs|tpl|jst|html"` files.
 
 The transform is only be applied to `.ejs`, `.tpl`, `.jst`, or `.html` files.
 
@@ -99,6 +100,18 @@ require('jstify/register')(/*opts*/);
 ```
 
 `opts` are the same as with browserify usage.
+
+#### Transforming with package.json ####
+
+```js
+...
+"browserify": {
+  "transform": [
+    ["jstify", {"extensions":"svg|html"}]
+  ]
+},
+...
+```
 
 ### Transformed Samples ###
 

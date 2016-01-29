@@ -94,6 +94,10 @@ Jstify.prototype._flush = function (next) {
 };
 
 function jstify(file, opts) {
+  if (opts.extensions) {
+    templateExtension = new RegExp('\.(' + opts.extensions + ')$');
+  }
+
   if (!templateExtension.test(file)) {
     return new stream.PassThrough();
   }
