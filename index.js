@@ -40,6 +40,8 @@ function wrap(source, engine, withImports) {
     if (withImports) {
       throw new Error('Cannot use "withImports" together with "lodash-micro"');
     }
+  } else if (engine === 'global') {
+    engineRequire = '';
   }
 
   if (withImports) {
