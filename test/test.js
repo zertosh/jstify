@@ -74,6 +74,27 @@ test('jstify', function(t) {
     });
   });
 
+  t.test('with global as engine', function(t) {
+    t.plan(3);
+    var filename = path.resolve('test/fixtures/uses-underscore.tpl');
+    var opts = {engine: 'global'};
+    jstifier(filename, opts, function(output) {
+      t.throws(function() {
+        var ctx = {module: {}};
+        vm.runInNewContext(output, ctx);
+        var template = ctx.module.exports;
+        template();
+      }, new ReferenceError('_ is not defined'));
+
+      t.doesNotThrow(function() {
+        var ctx = {_: _, module: {}};
+        vm.runInNewContext(output, ctx);
+        var template = ctx.module.exports;
+        t.equal(template(), '<div>123</div>');
+      });
+    });
+  });
+
   t.test('ignore non-template file', function(t) {
     t.plan(1);
     var filename = path.resolve('test/fixtures/ignore.js');
