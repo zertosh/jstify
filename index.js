@@ -14,13 +14,12 @@ var MINIFIER_DEFAULTS = {
 
 var DEFAULTS = {
   engine: 'underscore',
-  withImports: false,
-  templateOpts: {},
+  extensions: ['.jst', '.tpl', '.html', '.ejs'],
   minifierOpts: {},
-  noMinify: false
+  noMinify: false,
+  templateOpts: {},
+  withImports: false
 };
-
-var templateExtension = /\.(jst|tpl|html|ejs)$/;
 
 function compile(str, minifierOpts, templateOpts) {
   var minified = minifierOpts === false ? str : minify(str, minifierOpts);
@@ -67,13 +66,6 @@ function transform(src, opts) {
 
 function Jstify(opts) {
   stream.Transform.call(this);
-
-  opts = _.defaults({}, opts, DEFAULTS);
-
-  if (opts.minifierOpts !== false) {
-    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
-  }
-
   this._data = '';
   this._opts = opts;
 }
@@ -95,10 +87,32 @@ Jstify.prototype._flush = function (next) {
   next();
 };
 
+function parseExtensions (extensions) {
+  if (typeof extensions === 'string') {
+    return extensions.replace(' ', '').split(',');
+  }
+  return extensions
+}
+
+function canCompile (filename, extensions) {
+  return extensions.some(function(ext) {
+    return filename.indexOf(ext, filename.length - ext.length) !== -1;
+  });
+}
+
 function jstify(file, opts) {
-  if (!templateExtension.test(file)) {
+  opts = _.defaults({}, opts, DEFAULTS);
+
+  opts.extensions = parseExtensions(opts.extensions);
+
+  if (!canCompile(file, opts.extensions)) {
     return new stream.PassThrough();
   }
+
+  if (opts.minifierOpts !== false) {
+    opts.minifierOpts = _.defaults({}, opts.minifierOpts, MINIFIER_DEFAULTS);
+  }
+
   return new Jstify(opts);
 }
 

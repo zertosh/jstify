@@ -194,5 +194,28 @@ test('jstify', function(t) {
       }));
   });
 
+  t.test('custom extensions', function(t) {
+    t.plan(4);
+    var filename = path.resolve('test/fixtures/custom.ext');
+    jstifier(filename, {}, function(output) {
+      t.equal(output, '<%= "do i compile?" %>\n', 'should not compile');
+    });
+
+    jstifier(filename, {extensions: ['.ext']}, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(), 'do i compile?', 'should compile');
+    });
+
+    jstifier(filename, {extensions: '.ext'}, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(), 'do i compile?', 'should compile');
+    });
+
+    jstifier(filename, {extensions: '.ext, .tpl'}, function(output) {
+      var template = loadAsModule(output);
+      t.equal(template(), 'do i compile?', 'should compile');
+    });
+  });
+
   t.end();
 });
