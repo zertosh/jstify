@@ -19,11 +19,11 @@
     "test": "tap test/*.js"
   },
   "dependencies": {
-    "html-minifier": "^1.0.0",
+    "html-minifier": "^4.0.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
-    "concat-stream": "^1.4.6",
-    "tap": "^5.4.3"
+    "concat-stream": "^2.0.0",
+    "tap": "^13.1.11"
   }
 }
